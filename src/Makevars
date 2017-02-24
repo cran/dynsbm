@@ -1,0 +1,2 @@
+PKG_CXXFLAGS=-I. `${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` $(SHLIB_OPENMP_CFLAGS) #-DDEBUG
+PKG_LIBS=`${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()"` $(SHLIB_OPENMP_CFLAGS)

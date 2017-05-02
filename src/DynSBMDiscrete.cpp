@@ -17,51 +17,51 @@
 #include<DynSBMDiscrete.h>
 namespace dynsbm{
   void DynSBMDiscrete::updateTheta(int*** const Y){// M-step
-    for(int t=0;t<_T;t++)
-      for(int q=0;q<_Q;q++)
-        for(int l=0;l<_Q;l++)
-          for(int k=0;k<_K;k++) _multinomprobaql[t][q][l][k] = 0.;
+    for(int t=0;t<_t;t++)
+      for(int q=0;q<_q;q++)
+        for(int l=0;l<_q;l++)
+          for(int k=0;k<_k;k++) _multinomprobaql[t][q][l][k] = 0.;
     
     DynSBMDiscreteAddEventFunctor addEventFunctor(*this);
     updateThetaCore<DynSBMDiscreteAddEventFunctor>(Y, addEventFunctor);
     
-    for(int t=0;t<_T;t++){// symmetrize+normalize
-      for(int q=(_isdirected?0:1);q<_Q;q++){
+    for(int t=0;t<_t;t++){// symmetrize+normalize
+      for(int q=(_isdirected?0:1);q<_q;q++){
         for(int l=0;l<q;l++){
 	  double summultinomprobaql = 0.;
-	  for(int k=0;k<_K;k++) summultinomprobaql += _multinomprobaql[t][q][l][k];
+	  for(int k=0;k<_k;k++) summultinomprobaql += _multinomprobaql[t][q][l][k];
 	  if (summultinomprobaql>0)
-	    for(int k=0;k<_K;k++){
+	    for(int k=0;k<_k;k++){
 	      _multinomprobaql[t][q][l][k] = _multinomprobaql[t][q][l][k]/summultinomprobaql;
 	      if(!_isdirected) _multinomprobaql[t][l][q][k] = _multinomprobaql[t][q][l][k];
 	    }
 	}        	
 	if(_isdirected)
-	  for(int l=q+1;l<_Q;l++){
+	  for(int l=q+1;l<_q;l++){
 	    double summultinomprobaql = 0.;
-	    for(int k=0;k<_K;k++) summultinomprobaql += _multinomprobaql[t][q][l][k];
+	    for(int k=0;k<_k;k++) summultinomprobaql += _multinomprobaql[t][q][l][k];
 	    if (summultinomprobaql>0)
-	      for(int k=0;k<_K;k++){
+	      for(int k=0;k<_k;k++){
 		_multinomprobaql[t][q][l][k] = _multinomprobaql[t][q][l][k]/summultinomprobaql;
 	      }
 	  }      
       }
     }
-    for(int q=0;q<_Q;q++){// symmetrize+normalize
+    for(int q=0;q<_q;q++){// symmetrize+normalize
       double summultinomprobaqq = 0.;
-      for(int k=0;k<_K;k++) summultinomprobaqq += _multinomprobaql[0][q][q][k];
+      for(int k=0;k<_k;k++) summultinomprobaqq += _multinomprobaql[0][q][q][k];
       if(summultinomprobaqq>0)
-	for(int k=0;k<_K;k++) _multinomprobaql[0][q][q][k] = _multinomprobaql[0][q][q][k]/summultinomprobaqq;    
-      for(int t=1;t<_T;t++)
-        for(int k=0;k<_K;k++) _multinomprobaql[t][q][q][k] =  _multinomprobaql[0][q][q][k];      
+	for(int k=0;k<_k;k++) _multinomprobaql[0][q][q][k] = _multinomprobaql[0][q][q][k]/summultinomprobaqq;    
+      for(int t=1;t<_t;t++)
+        for(int k=0;k<_k;k++) _multinomprobaql[t][q][q][k] =  _multinomprobaql[0][q][q][k];      
     }
     correctMultinomproba();
   }
   void DynSBMDiscrete::correctMultinomproba(){ // numerical issue : avoid too small value for multinomproba
-    for(int t=0;t<_T;t++){
-        for(int q=1;q<_Q;q++){
-            for(int l=0;l<_Q;l++){
-                for(int k=0;k<_K;k++){
+    for(int t=0;t<_t;t++){
+        for(int q=1;q<_q;q++){
+            for(int l=0;l<_q;l++){
+                for(int k=0;k<_k;k++){
                   if(_multinomprobaql[t][q][l][k]<1e-7)
                     _multinomprobaql[t][q][l][k] = 1e-7;
                   if(_multinomprobaql[t][q][l][k]>(1-1e-7)){

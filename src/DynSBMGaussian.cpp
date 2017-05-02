@@ -18,21 +18,21 @@
 #include<iostream>
 namespace dynsbm{
   void DynSBMGaussian::updateTheta(double*** const Y){// M-step
-    for(int t=0;t<_T;t++){
+    for(int t=0;t<_t;t++){
       _sigma[t] = 0.;
-      for(int q=0;q<_Q;q++)
-	for(int l=0;l<_Q;l++)
+      for(int q=0;q<_q;q++)
+	for(int l=0;l<_q;l++)
 	  _muql[t][q][l] = 0;
     }
     // note the constraint _muql[t,q,q] = _muql[,q,q]
     double*** sumql;
-    allocate3D<double>(sumql,_T,_Q,_Q);
+    allocate3D<double>(sumql,_t,_q,_q);
     
     DynSBMGaussianAddEventFunctor addEventFunctor(*this,sumql);
     updateThetaCore<DynSBMGaussianAddEventFunctor>(Y, addEventFunctor);
     
-    for(int t=0;t<_T;t++){// symmetrize+normalize 
-      for(int q=(_isdirected?0:1);q<_Q;q++){
+    for(int t=0;t<_t;t++){// symmetrize+normalize 
+      for(int q=(_isdirected?0:1);q<_q;q++){
 	for(int l=0;l<q;l++){
 	  if (sumql[t][q][l]>0){
 	    _muql[t][q][l] = _muql[t][q][l] / sumql[t][q][l];
@@ -40,27 +40,27 @@ namespace dynsbm{
 	  }
 	} 	
 	if(_isdirected)
-	  for(int l=q+1;l<_Q;l++)
+	  for(int l=q+1;l<_q;l++)
 	    if (sumql[t][q][l]>0)
 	      _muql[t][q][l] = _muql[t][q][l] / sumql[t][q][l];	
       }
     }
-    for(int q=0;q<_Q;q++){// symmetrize+normalize
+    for(int q=0;q<_q;q++){// symmetrize+normalize
       // note the constraint muql[t,q,q] = muql[,q,q]
       if (sumql[0][q][q]>0)
 	_muql[0][q][q] = _muql[0][q][q] / sumql[0][q][q];
-      for(int t=1;t<_T;t++)
+      for(int t=1;t<_t;t++)
 	_muql[t][q][q] = _muql[0][q][q];
     }
     // _sigma - homoscedastic at each time
-    for(int t=0;t<_T;t++){
+    for(int t=0;t<_t;t++){
       double sumtaumarginalt = 0.;
-      for(int i=1;i<_N;i++){
+      for(int i=1;i<_n;i++){
 	if (ispresent(t,i)){
 	  // j<i
 	  for(int j=0;j<i;j++){
 	    if (ispresent(t,j))
-	      for(int q=0;q<_Q;q++){
+	      for(int q=0;q<_q;q++){
 		for(int l=0;l<=q;l++){
 		  if (q!=l){
 		    if(Y[t][i][j]>0){
@@ -88,7 +88,7 @@ namespace dynsbm{
 	  }
 	  // j==i considered only if selfloop allowed
 	  if (_withselfloop)
-	    for(int q=0;q<_Q;q++)
+	    for(int q=0;q<_q;q++)
 	      if(Y[t][i][i]>0){		  
 		_sigma[t] += tauMarginal(t,i,q)*(Y[t][i][i]-_muql[t][q][q])*(Y[t][i][i]-_muql[t][q][q]);
 		sumtaumarginalt += tauMarginal(t,i,q);
@@ -97,6 +97,6 @@ namespace dynsbm{
       }
       _sigma[t] = sqrt(_sigma[t]/sumtaumarginalt);
     }
-    deallocate3D<double>(sumql,_T,_Q,_Q);
+    deallocate3D<double>(sumql,_t,_q,_q);
   }
 }

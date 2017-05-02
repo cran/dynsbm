@@ -12,7 +12,7 @@ select.dynsbm(Y, present=NULL, Qmin, Qmax,
 			edge.type=c("binary","discrete","continuous"), K=-1,
 			directed=FALSE, self.loop=FALSE,
 			nb.cores=1,
-			iter.max=20, nstart=100, perturbation.rate=0.2,
+			iter.max=20, nstart=25, perturbation.rate=0.2,
 			plot=TRUE)
 }
 \arguments{

@@ -17,7 +17,7 @@ select.dynsbm <- function(Y, present=NULL, Qmin, Qmax,
 		edge.type=c("binary","discrete","continuous"), K=-1,
 		directed=FALSE, self.loop=FALSE,
 		nb.cores=1,
-		iter.max=20, nstart=100, perturbation.rate=0.2,
+		iter.max=20, nstart=25, perturbation.rate=0.2,
 		plot=TRUE){
 	if (is.null(present)){
 		present <- matrix(0L,dim(Y)[2],dim(Y)[1])    
@@ -68,5 +68,5 @@ compute.icl <- function(dynsbm){
     N <- nrow(dynsbm$membership)
     pen <- 0.5*Q*log(N*(N-1)*T/2) + 0.25*Q*(Q-1)*T*log(N*(N-1)/2) # binary case
     if ("sigma" %in% names(dynsbm)) pen <- 2*pen # continuous case
-    return(dynsbm$loglikelihood - 0.5*Q*(Q-1)*log(N*(T-1)) - pen)    
+    return(dynsbm$loglikelihood - ifelse(T>1,0.5*Q*(Q-1)*log(N*(T-1)),0) - pen)    
 }

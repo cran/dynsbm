@@ -28,11 +28,11 @@ namespace dynsbm{
   public:
     DynSBMGaussian(int T, int N, int Q, const Rcpp::IntegerMatrix & present, bool isdirected = false, bool withselfloop = false)
       : DynSBM<double>(T,N,Q,present,isdirected,withselfloop) {
-      allocate3D(_muql,_T,_Q,_Q);
-      _sigma = new double[_T];
+      allocate3D(_muql,_t,_q,_q);
+      _sigma = new double[_t];
     }
     ~DynSBMGaussian(){
-      deallocate3D(_muql,_T,_Q,_Q);
+      deallocate3D(_muql,_t,_q,_q);
       delete[] _sigma;
     }
     double*** const getMu() const{

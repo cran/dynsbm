@@ -14,8 +14,8 @@
     You should have received a copy of the GNU General Public License
     along with dynsbm.  If not, see <http://www.gnu.org/licenses/>
  */
-#ifndef DYNSBM_TOOLS
-#define DYNSBM_TOOLS
+#ifndef DYNSBM_tOOLS
+#define DYNSBM_tOOLS
 template<typename Ttype>
 void allocate2D(Ttype**& ptr, int d1, int d2){
   ptr = new Ttype*[d1];

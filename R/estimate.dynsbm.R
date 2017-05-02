@@ -57,7 +57,7 @@ estimate.dynsbm <- function (Y, present=NULL, Q,
             Yaggr <- Yaggr / rowSums(present)
         }
         if (nb.cores==1){
-            km <- kmeans(Yaggr, Q, nstart=100)
+            km <- kmeans(Yaggr, Q, nstart=64)
             init.cluster <- km$cluster
         } else{
             RNGkind("L'Ecuyer-CMRG")

@@ -21,7 +21,7 @@ namespace dynsbm{
   class DynSBMDiscrete
     : public DynSBM<int>{
   protected:
-    int _K; // Y has integer values in [1,2,...K]
+    int _k; // Y has integer values in [1,2,...K]
     double**** _multinomprobaql;
     void correctMultinomproba();
     void addEvent(double proba, int y, int t, int q, int l){
@@ -32,11 +32,11 @@ namespace dynsbm{
       : DynSBM<int>(T,N,Q,present,isdirected,withselfloop) {
     }
     ~DynSBMDiscrete(){
-      deallocate4D(_multinomprobaql,_T,_Q,_Q,_K);
+      deallocate4D(_multinomprobaql,_t,_q,_q,_k);
     }
     void setK(int K){ // mandatory
-      _K=K;
-      allocate4D(_multinomprobaql,_T,_Q,_Q,_K);
+      _k=K;
+      allocate4D(_multinomprobaql,_t,_q,_q,_k);
     }
     double**** const getMultinomproba() const{
       return(_multinomprobaql);

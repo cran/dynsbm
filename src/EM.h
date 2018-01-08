@@ -18,7 +18,6 @@
 #define DYNSBM_EM_H
 #include<DynSBM.h>
 #include<iostream>
-#include<iostream>
 namespace dynsbm{
   template<class TDynSBM, typename Ytype>
   class EM{
@@ -31,13 +30,16 @@ namespace dynsbm{
     const TDynSBM& getModel() const{
       return _model;
     }
-    void initialize(const std::vector<int>& clustering, Ytype*** const Y){ 
+    void initialize(const std::vector<int>& clustering, Ytype*** const Y, bool frozen=false){ 
       _model.initTau(clustering);
-      _model.updateTheta(Y);
+      if(frozen)
+	_model.updateFrozenTheta(Y);
+      else
+	_model.updateTheta(Y);	
       _model.initNotinformativeStationary();
       _model.initNotinformativeTrans();
     }
-    int run(Ytype*** const Y, int nbit = 20, int nbitFP = 10){
+    int run(Ytype*** const Y, int nbit, int nbitFP, bool frozen){
       double prevlogl = _model.completedLoglikelihood(Y);
       //---- estimation
       int it = 0, nbiteff = 0;
@@ -45,9 +47,6 @@ namespace dynsbm{
 	int itfp = 0;
 	double prevloglfp = prevlogl;
 	while (itfp<nbitFP){
-#ifdef DEBUG
-	  std::cerr<<itfp<<" ";
-#endif
 	  _model.updateTau(Y);
 	  if (itfp%3==0){ // saving time
 	    double newloglfp = _model.completedLoglikelihood(Y);
@@ -60,7 +59,7 @@ namespace dynsbm{
 	  } else
 	    itfp = itfp+1;
 #ifdef DEBUG
-	  std::cerr<<_model.completedLoglikelihood(Y)<<std::endl;
+	  std::cerr<<"After EStep: "<<_model.completedLoglikelihood(Y)<<std::endl;
 #endif
 	}
 	_model.updateTrans();
@@ -68,11 +67,17 @@ namespace dynsbm{
 	std::cerr<<"After MStep on trans: "<<_model.completedLoglikelihood(Y)<<std::endl;
 #endif
 	_model.updateStationary();
-	_model.updateTheta(Y);
+	if(frozen)
+	  _model.updateFrozenTheta(Y);
+	else
+	  _model.updateTheta(Y);	  
 #ifdef DEBUG
 	std::cerr<<"After MStep on theta: "<<_model.completedLoglikelihood(Y)<<std::endl;
 #endif
 	double newlogl = _model.completedLoglikelihood(Y);
+#ifdef DEBUG
+	std::cerr<<"Testing the likelihood decrease: "<<prevlogl<<" -> "<<newlogl<<std::endl;
+#endif
 	nbiteff++;
 	if(fabs((prevlogl-newlogl)/prevlogl)<1e-4){
 #ifdef DEBUG

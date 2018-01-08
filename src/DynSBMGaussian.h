@@ -35,21 +35,23 @@ namespace dynsbm{
       deallocate3D(_muql,_t,_q,_q);
       delete[] _sigma;
     }
-    double*** const getMu() const{
-      return(_muql);
+    double getMu(int t, int q, int l) const{
+      return(_muql[t][q][l]);
     }
-    double* const getSigma() const{
-      return(_sigma);
+    double getSigma(int t) const{
+      return(_sigma[t]);
     }
     virtual double logDensity(int t, int q, int l, double y) const{
       if(y>0.){ // testing y==0 for real values
           int give_log = 1;
-          return(log(1-_betaql[t][q][l]) + Rf_dnorm4(y, _muql[t][q][l], _sigma[t], give_log));
+          return(_1minusbetaql[t][q][l] // which is actually log(1-_betaql[t][q][l]))
+		 + Rf_dnorm4(y, _muql[t][q][l], _sigma[t], give_log));
       } else{
-          return(log(_betaql[t][q][l]));
+          return(_betaql[t][q][l]); // which is actually log(_betaql[t][q][l]))
       }
     }
     virtual void updateTheta(double*** const Y);
+    virtual void updateFrozenTheta(double*** const Y);
     friend class DynSBMGaussianAddEventFunctor;
   };
 

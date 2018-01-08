@@ -55,20 +55,24 @@ namespace dynsbm{
       return(_taut[tstorage][i][0][q]);
     }
     // edge distribution
-    double*** _betaql;
+    double*** _betaql; // trick: store log(betaql)
+    double*** _1minusbetaql; // trick: store log(1-betaql)
     void correctBeta();
     virtual double logDensity(int t, int q, int l, Ytype y) const = 0;
     template<class TAddEventFunctor> 
     void updateThetaCore(Ytype*** const Y, TAddEventFunctor& addEventFunctor);
+    template<class TAddEventFunctor> 
+    void updateFrozenThetaCore(Ytype*** const Y, TAddEventFunctor& addEventFunctor);
   public:
     DynSBM(int T, int N, int Q, const Rcpp::IntegerMatrix & present, bool isdirected = false, bool withselfloop = false);
     ~DynSBM();
     // Markov chain
-    double** const getTrans() const{
-      return(_trans);
+    double getTrans(int q, int l) const{
+      return(_trans[q][l]);
     }
-    double*** const getBeta() const{
-      return(_betaql);
+    double getBeta(int t, int q, int l) const{
+      // optimization trick: stored in log
+      return(exp(_betaql[t][q][l]));
     }
     void updateTrans();
     void updateStationary();
@@ -78,6 +82,7 @@ namespace dynsbm{
     void initTau(const std::vector<int>& clustering);
     void updateTau(Ytype*** const Y);
     virtual void updateTheta(Ytype*** const Y) = 0;
+    virtual void updateFrozenTheta(Ytype*** const Y) = 0;
     double completedLoglikelihood(Ytype*** const Y) const;
     // model output
     std::vector<int> getGroupsByMAP(int t) const;
@@ -93,6 +98,7 @@ namespace dynsbm{
     allocate4D<double>(_taut,_t-1,_n,_q,_q);
     allocate3D<double>(_taum,_t,_n,_q);
     allocate3D<double>(_betaql,_t,_q,_q);
+    allocate3D<double>(_1minusbetaql,_t,_q,_q);
   }
   
   template<typename Ytype> 
@@ -103,6 +109,7 @@ namespace dynsbm{
     deallocate4D<double>(_taut,_t-1,_n,_q,_q);
     deallocate3D<double>(_taum,_t,_n,_q);
     deallocate3D<double>(_betaql,_t,_q,_q);
+    deallocate3D<double>(_1minusbetaql,_t,_q,_q);
   }
   
   template<typename Ytype> 
@@ -139,8 +146,8 @@ namespace dynsbm{
       }
       if (sumtrans>0) for(int qprime=0;qprime<_q;qprime++) _trans[q][qprime] = _trans[q][qprime]/sumtrans;
       for(int qprime=0;qprime<_q;qprime++){
-	if(_trans[q][qprime]<1e-7){
-	  _trans[q][qprime] = 1e-7;
+	if(_trans[q][qprime]<precision){
+	  _trans[q][qprime] = precision;
 	}
       }
       sumtrans=0;
@@ -166,8 +173,8 @@ namespace dynsbm{
 	    _stationary[q] += tauMarginal(t,i,q);
 	}
       }
-      if(_stationary[q]<1e-7){
-	_stationary[q] = 1e-7;
+      if(_stationary[q]<precision){
+	_stationary[q] = precision;
       }
       sumst += _stationary[q];
     }
@@ -285,7 +292,7 @@ namespace dynsbm{
 	}
       }
     }
-    // switching tau for old value at iteration (k) to new values at iteration (k+1)
+    // switching tau for old values at iteration (k) to new values at iteration (k+1)
     for(int i=0;i<_n;i++) 
       for(int q=0;q<_q;q++) 
 	_tau1[i][q] = newtau1[i][q];
@@ -402,10 +409,162 @@ namespace dynsbm{
     correctBeta();
     deallocate3D<double>(betasumql,_t,_q,_q);
   }
+
+  /*
+  template<typename Ytype>
+  template<class TAddEventFunctor> 
+  void DynSBM<Ytype>::updateFrozenThetaCore(Ytype*** const Y, TAddEventFunctor& addEventFunctor){// M-step
+    ... SAME THING
+    // symmetrize+normalize
+    for(int q=_isdirected?0:1;q<_q;q++){
+      for(int l=0;l<q;l++){
+	double beta = 0., betasum = 0.;
+	for(int t=0;t<_t;t++){
+	  beta += _betaql[t][q][l];
+	  betasum += betasumql[t][q][l];
+	}
+	if (betasum>0){	
+	  for(int t=0;t<_t;t++){  
+	    _betaql[t][q][l] = beta / betasum;
+	    if(!_isdirected) _betaql[t][l][q] = _betaql[t][q][l];
+	  }
+	}
+      }
+      if(_isdirected)
+	for(int l=q+1;l<_q;l++){
+	  double beta = 0., betasum = 0.;
+	  for(int t=0;t<_t;t++){
+	    beta += _betaql[t][q][l];
+	    betasum += betasumql[t][q][l];
+	  }
+	  if (betasum>0){	
+	    for(int t=0;t<_t;t++){  
+	      _betaql[t][q][l] = beta / betasum;
+	    }
+	  }	  
+	}
+    }
+    
+    for(int q=0;q<_q;q++){// symmetrize+normalize
+      // note the constraint betaql[t,q,q] = betaql[,q,q]
+      if (betasumql[0][q][q]>0)
+	_betaql[0][q][q] = _betaql[0][q][q] / betasumql[0][q][q];
+      for(int t=1;t<_t;t++)
+	_betaql[t][q][q] = _betaql[0][q][q];
+    }
+    correctBeta();
+    deallocate3D<double>(betasumql,_t,_q,_q);
+  }
+  */
+  
+  template<typename Ytype>
+  template<class TAddEventFunctor> 
+  void DynSBM<Ytype>::updateFrozenThetaCore(Ytype*** const Y, TAddEventFunctor& addEventFunctor){// M-step
+    for(int t=0;t<_t;t++)
+      for(int q=0;q<_q;q++)
+	for(int l=0;l<_q;l++){
+	  _betaql[t][q][l] = 0; // probability of a zero value
+	}
+    // note the constraint betaql[t,q,q] = betaql[,q,q]
+    double*** betasumql;
+    allocate3D<double>(betasumql,_t,_q,_q);
+    // mu/beta
+    for(int t=0;t<_t;t++){
+      for(int i=0;i<_n;i++){
+	if (ispresent(t,i)){
+	  // j<i
+	  for(int j=0;j<i;j++){
+	    if (ispresent(t,j))
+	      for(int q=0;q<_q;q++){
+		for(int l=0;l<q;l++){
+		  if(_isdirected){		      
+		    if(Y[t][i][j]>Ytype(0)){
+		      addEventFunctor(tauMarginal(t,i,q)*tauMarginal(t,j,l), Y[t][i][j], 0, q, l);
+		      addEventFunctor(tauMarginal(t,i,l)*tauMarginal(t,j,q), Y[t][i][j], 0, l, q);
+		    }
+		    else{
+		      _betaql[0][q][l] += tauMarginal(t,i,q)*tauMarginal(t,j,l);
+		      _betaql[0][l][q] += tauMarginal(t,i,l)*tauMarginal(t,j,q);
+		    }
+		    betasumql[0][q][l] += tauMarginal(t,i,q)*tauMarginal(t,j,l);
+		    betasumql[0][l][q] += tauMarginal(t,i,l)*tauMarginal(t,j,q);
+		    if(Y[t][j][i]>Ytype(0)){
+		      addEventFunctor(tauMarginal(t,j,q)*tauMarginal(t,i,l), Y[t][j][i], 0, q, l);
+		      addEventFunctor(tauMarginal(t,j,l)*tauMarginal(t,i,q), Y[t][j][i], 0, l, q);
+		    } else{
+		      _betaql[0][q][l] += tauMarginal(t,j,q)*tauMarginal(t,i,l);
+		      _betaql[0][l][q] += tauMarginal(t,j,l)*tauMarginal(t,i,q);
+		    }
+		    betasumql[0][q][l] += tauMarginal(t,j,q)*tauMarginal(t,i,l);
+		    betasumql[0][l][q] += tauMarginal(t,j,l)*tauMarginal(t,i,q);
+		  } else{
+		    if(Y[t][i][j]>Ytype(0)){
+		      addEventFunctor(tauMarginal(t,i,q)*tauMarginal(t,j,l), Y[t][i][j], 0, q, l);
+		      addEventFunctor(tauMarginal(t,i,l)*tauMarginal(t,j,q), Y[t][i][j], 0, q, l);
+		    }
+		    else{
+		      _betaql[0][q][l] += tauMarginal(t,i,q)*tauMarginal(t,j,l) + tauMarginal(t,i,l)*tauMarginal(t,j,q);
+		    }
+		    betasumql[0][q][l] += tauMarginal(t,i,q)*tauMarginal(t,j,l) + tauMarginal(t,i,l)*tauMarginal(t,j,q);
+		  }
+		}
+		// q==l
+		if(Y[t][i][j]>Ytype(0))
+		  addEventFunctor(tauMarginal(t,i,q)*tauMarginal(t,j,q), Y[t][i][j], 0, q, q);
+		else{
+		  _betaql[0][q][q] += tauMarginal(t,i,q)*tauMarginal(t,j,q); // t=0 gathers all t when q=l
+		}
+		if(_isdirected){
+		  if(Y[t][j][i]>Ytype(0))
+		    addEventFunctor(tauMarginal(t,i,q)*tauMarginal(t,j,q), Y[t][j][i], 0, q, q);
+		  else
+		    _betaql[0][q][q] += tauMarginal(t,i,q)*tauMarginal(t,j,q);
+		}
+		betasumql[0][q][q] += (1+int(_isdirected)) * tauMarginal(t,i,q)*tauMarginal(t,j,q);	
+	      }
+	  }
+	  // j==i considered only if selfloop allowed
+	  if (_withselfloop)
+	    for(int q=0;q<_q;q++){
+	      if(Y[t][i][i]>Ytype(0))
+		addEventFunctor(tauMarginal(t,i,q), Y[t][i][i], 0, q, q);
+	      else
+		_betaql[0][q][q] += tauMarginal(t,i,q); // t=0 gathers all t when q=l
+	      betasumql[0][q][q] += tauMarginal(t,i,q);	    
+	    }	
+	}	
+      }
+    }
+    // symmetrize+normalize
+    for(int q=(_isdirected?0:1);q<_q;q++){
+      for(int l=0;l<q;l++)
+	if (betasumql[0][q][l]>0){
+	  _betaql[0][q][l] = _betaql[0][q][l] / betasumql[0][q][l];
+	  if(!_isdirected) _betaql[0][l][q] = _betaql[0][q][l];
+	}        	
+      if(_isdirected)
+	for(int l=q+1;l<_q;l++)
+	  if (betasumql[0][q][l]>0)
+	    _betaql[0][q][l] = _betaql[0][q][l] / betasumql[0][q][l];	      
+    }
+    for(int q=0;q<_q;q++){// symmetrize+normalize
+      if (betasumql[0][q][q]>0)
+	_betaql[0][q][q] = _betaql[0][q][q] / betasumql[0][q][q];
+    }
+    // note the constraint betaql[t,q,l] = betaql[0,q,l]
+    for(int t=1;t<_t;t++){
+      for(int q=0;q<_q;q++)
+	for(int l=0;l<_q;l++)
+	  _betaql[t][q][l] = _betaql[0][q][l];
+    }
+    correctBeta();
+    deallocate3D<double>(betasumql,_t,_q,_q);
+  }
   
   template<typename Ytype>
   double DynSBM<Ytype>::completedLoglikelihood(Ytype*** const Y) const{ // including entropy term
     double J = 0.;
+    //std::cerr.precision(8);
     // term 1
     for(int i=0;i<_n;i++){
       if (ispresent(0,i))
@@ -531,8 +690,8 @@ namespace dynsbm{
     for(int i=0;i<_n;i++){
       double sumtau1i = 0.;
       for(int q=0;q<_q;q++){
-	if(_tau1[i][q]<1e-7){
-	  _tau1[i][q] = 1e-7;
+	if(_tau1[i][q]<precision){
+	  _tau1[i][q] = precision;
 	}
 	sumtau1i += _tau1[i][q];
       }
@@ -550,8 +709,8 @@ namespace dynsbm{
 	for(int q=0;q<(ispresent(t-1,i)?_q:1);q++){ // only q=0 if absent at t-1 (see tauArrival method)
 	  double sumtaut = 0.;
 	  for(int qprime=0;qprime<_q;qprime++){
-	    if(_taut[tstorage][i][q][qprime]<1e-7){
-	      _taut[tstorage][i][q][qprime] = 1e-7;
+	    if(_taut[tstorage][i][q][qprime]<precision){
+	      _taut[tstorage][i][q][qprime] = precision;
 	    }
 	    sumtaut += _taut[tstorage][i][q][qprime];
 	  }
@@ -570,8 +729,8 @@ namespace dynsbm{
       for(int i=0;i<_n;i++){
 	double sumtaum = 0.;
 	for(int q=0;q<_q;q++){
-	  if(_taum[tstorage][i][q]<1e-7){
-	    _taum[tstorage][i][q] = 1e-7;	    
+	  if(_taum[tstorage][i][q]<precision){
+	    _taum[tstorage][i][q] = precision;	    
 	  }
 	  sumtaum += _taum[tstorage][i][q];
 	}
@@ -638,12 +797,15 @@ namespace dynsbm{
     for(int t=0;t<_t;t++){
       for(int q=0;q<_q;q++){
         for(int l=0;l<_q;l++){
-          if(_betaql[t][l][q]<1e-7){
-            _betaql[t][l][q] = 1e-7;
+          if(_betaql[t][q][l]<precision){
+            _betaql[t][q][l] = precision;
           }
-          if(_betaql[t][l][q]>(1-1e-7)){
-            _betaql[t][l][q] = 1-1e-7;
+          if(_betaql[t][q][l]>(1-precision)){
+            _betaql[t][q][l] = 1-precision;
           }
+	  double beta = _betaql[t][q][l];
+	  _betaql[t][q][l] = log(beta); // trick: store log(betaql)
+	  _1minusbetaql[t][q][l] = log(1-beta); // trick: store log(1-betaql)
         }
       }
     }

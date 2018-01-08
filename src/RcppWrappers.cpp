@@ -37,7 +37,8 @@ List dynsbmcore(int T, int N, int Q,
 		int nbit = 20,
 		int nbthreads = 1,
 		bool isdirected = false,
-		bool withselfloop = false) {
+		bool withselfloop = false,
+		bool frozen = false) {
 #ifdef _OPENMP
   omp_set_num_threads(nbthreads);
 #endif
@@ -56,10 +57,10 @@ List dynsbmcore(int T, int N, int Q,
 	}
       }
     }
-    em.initialize(as<vector<int> >(clustering),Y);
-    int nbiteff = em.run(Y,nbit);
+    em.initialize(as<vector<int> >(clustering),Y,frozen);
+    int nbiteff = em.run(Y,nbit,10,frozen);
     NumericMatrix trans(Q,Q);
-    for(int q=0;q<Q;q++) for(int l=0;l<Q;l++) trans[l+q*Q] = (em.getModel().getTrans())[q][l];
+    for(int q=0;q<Q;q++) for(int l=0;l<Q;l++) trans[l+q*Q] = em.getModel().getTrans(q,l);
     IntegerMatrix membership(N,T);
     for(int t=0;t<T;t++){
       std::vector<int> groups = em.getModel().getGroupsByMAP(t);
@@ -72,7 +73,7 @@ List dynsbmcore(int T, int N, int Q,
     for(int t=0;t<T;t++){
       for(int q=0;q<Q;q++){
 	for(int l=0;l<Q;l++){
-	  beta[l*(Q*T)+q*T+t]= 1-(em.getModel().getBeta())[t][q][l]; // cf. paper
+	  beta[l*(Q*T)+q*T+t]= 1-(em.getModel().getBeta(t,q,l)); // cf. paper
 	}}}
     double lkl = em.getModel().modelselectionLoglikelihood(Y);
     deallocate3D<int>(Y,T,N,Q);
@@ -100,10 +101,10 @@ List dynsbmcore(int T, int N, int Q,
 	  }
 	}
       }
-      em.initialize(as<vector<int> >(clustering),Y);
-      int nbiteff = em.run(Y,nbit);
+      em.initialize(as<vector<int> >(clustering),Y,frozen);
+      int nbiteff = em.run(Y,nbit,10,frozen);
       NumericMatrix trans(Q,Q);
-      for(int q=0;q<Q;q++) for(int l=0;l<Q;l++) trans[l+q*Q] = (em.getModel().getTrans())[q][l];
+      for(int q=0;q<Q;q++) for(int l=0;l<Q;l++) trans[l+q*Q] = em.getModel().getTrans(q,l);
       IntegerMatrix membership(N,T);
       for(int t=0;t<T;t++){
 	std::vector<int> groups = em.getModel().getGroupsByMAP(t);
@@ -116,7 +117,7 @@ List dynsbmcore(int T, int N, int Q,
       for(int t=0;t<T;t++){
         for(int q=0;q<Q;q++){
           for(int l=0;l<Q;l++){
-            beta[l*(Q*T)+q*T+t]= 1-(em.getModel().getBeta())[t][q][l]; // cf. paper
+            beta[l*(Q*T)+q*T+t]= 1-em.getModel().getBeta(t,q,l); // cf. paper
 	  }}}
       Rcpp::NumericVector gammadims(4);
       gammadims[0] = T; gammadims[1] = Q; gammadims[2] = Q; gammadims[3] = K;
@@ -126,7 +127,7 @@ List dynsbmcore(int T, int N, int Q,
         for(int q=0;q<Q;q++){
           for(int l=0;l<Q;l++){
             for(int k=0;k<K;k++){
-              gamma[k*Q*Q*T+l*(Q*T)+q*T+t]= (em.getModel().getMultinomproba())[t][q][l][k];
+              gamma[k*Q*Q*T+l*(Q*T)+q*T+t]= em.getModel().getMultinomproba(t,q,l,k);
 	    }}}}
       double lkl = em.getModel().modelselectionLoglikelihood(Y);
       deallocate3D<int>(Y,T,N,Q);
@@ -154,10 +155,10 @@ List dynsbmcore(int T, int N, int Q,
 	  }
 	}
       }
-      em.initialize(as<vector<int> >(clustering),Y);
-      int nbiteff = em.run(Y,nbit);
+      em.initialize(as<vector<int> >(clustering),Y,frozen);
+      int nbiteff = em.run(Y,nbit,10,frozen);
       NumericMatrix trans(Q,Q);
-      for(int q=0;q<Q;q++) for(int l=0;l<Q;l++) trans[l+q*Q] = (em.getModel().getTrans())[q][l];
+      for(int q=0;q<Q;q++) for(int l=0;l<Q;l++) trans[l+q*Q] = em.getModel().getTrans(q,l);
       IntegerMatrix membership(N,T);
       for(int t=0;t<T;t++){
 	std::vector<int> groups = em.getModel().getGroupsByMAP(t);
@@ -170,16 +171,16 @@ List dynsbmcore(int T, int N, int Q,
       for(int t=0;t<T;t++){
         for(int q=0;q<Q;q++){
           for(int l=0;l<Q;l++){
-            beta[l*(Q*T)+q*T+t]= 1-(em.getModel().getBeta())[t][q][l]; // cf. paper
+            beta[l*(Q*T)+q*T+t]= 1-(em.getModel().getBeta(t,q,l)); // cf. paper
 	  }}}
       Rcpp::NumericVector mu(d);  // create vec. with correct dims
       for(int t=0;t<T;t++){
         for(int q=0;q<Q;q++){
           for(int l=0;l<Q;l++){
-            mu[l*(Q*T)+q*T+t]= (em.getModel().getMu())[t][q][l];
+            mu[l*(Q*T)+q*T+t]= em.getModel().getMu(t,q,l);
 	  }}}
       NumericVector sigma(T);
-      for(int t=0;t<T;t++) sigma[t] = (em.getModel().getSigma())[t];
+      for(int t=0;t<T;t++) sigma[t] = em.getModel().getSigma(t);
       double lkl = em.getModel().modelselectionLoglikelihood(Y);
       deallocate3D<double>(Y,T,N,Q);
       return List::create(Rcpp::Named("trans") = trans,

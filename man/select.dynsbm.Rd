@@ -13,22 +13,22 @@ select.dynsbm(Y, present=NULL, Qmin, Qmax,
 			directed=FALSE, self.loop=FALSE,
 			nb.cores=1,
 			iter.max=20, nstart=25, perturbation.rate=0.2,
+                        fixed.param=FALSE, bipartition=NULL,
 			plot=TRUE)
 }
 \arguments{
   \item{Y}{An object of class \code{array} of dimension (T x N x N) containing T adjacency matrices of size (N x N), where N is the number of nodes in the network and T is the number of time points.}
-  \item{present}{'NULL' or an object of class \code{matrix} of size (N x T)
+  \item{present}{\code{NULL} or an object of class \code{matrix} of size (N x T)
     containing the presence/absence (coded with 1/0 respectively) of
-    each N nodes at each of the T time points. When set to 'NULL', this object is deduced from \code{Y} (see the "Details" section). Any node must be present at least once among the time points.}
+    each N nodes at each of the T time points. When set to \code{NULL}, this object is deduced from \code{Y} (see the "Details" section). Any node must be present at least once among the time points.}
   \item{Qmin}{Minimum number of groups >1.}
   \item{Qmax}{Maximum number of groups.}
   \item{edge.type}{Type of adjacency matrices. This should be (an unambiguous abbreviation of) one of \code{binary}, \code{discrete} or \code{continuous}. 
   See the "Details" section.}
   \item{K}{Only if \code{edge.type=="discrete"}. Number of non-zero discrete values (i.e. in {1,..,K}).} 
-  \item{directed}{Whether to consider the network is directed (and
-    therefore whether \code{Y} is asymmetric).}
-  \item{self.loop}{Whether to allow and consider self-loops (edges from one node
-    to the same node) in the estimation steps.}   
+  \item{directed}{If \code{TRUE}, the network is supposed to be directed (and
+    therefore \code{Y} is supposed to be asymmetric).}
+  \item{self.loop}{If \code{TRUE}, self-loops (edges from one node to the same node) are allowed and taken into acount in the estimation procedure.}   
   \item{nb.cores}{Number of cores to use, i.e. how many child
     processes and how many threads will be run simultaneously during the
     initialization and the estimation steps respectively.}
@@ -36,6 +36,13 @@ select.dynsbm(Y, present=NULL, Qmin, Qmax,
   \item{nstart}{Number of starting points for the iterative estimation algorithm.  See the "Details" section.}
   \item{perturbation.rate}{Rate of perturbation (in [0,1], see \code{nstart}) for the iterative estimation algorithm. This rate is
     the fraction of nodes for which its group is randomly shuffled.}
+  \item{fixed.param}{If \code{TRUE}, the model parameters remain fixed and
+    constant in time. By default, \code{fixed.param} is automatically
+    set to \code{TRUE} in the bipartite case (i.e. \code{bipartition} is not
+    \code{NULL}; see the "Details" section).}
+  \item{bipartition}{\code{NULL} or a vector of size N specifying a node bipartition
+    in the case of bipartite networks (see the "Details" section). Each element of this vector is set to 1 or 2 to specify the node belongs to the
+    first or second set of nodes.}
   \item{plot}{Display a plot with the loglikelihood and the ICL criteria if \code{edge.type=="binary"/"continuous"}. See the "Details" section.} 
 }
 \details{
@@ -57,7 +64,17 @@ select.dynsbm(Y, present=NULL, Qmin, Qmax,
   The greater \code{nstart}, the more accurate the results.
   
   To select the best number of groups, the "elbow" method consists in finding the point where the slope of the loglikelihood is decreasing (i.e. the loglikelihood is reaching a plateau).
-  If \code{edge.type=="binary"}, the ICL criteria (plotted in red) has to be used : the best number of nodes is supposed to maximize the ICL criteria. 
+  If \code{edge.type=="binary"}, the ICL criteria (plotted in red) has
+  to be used : the best number of nodes is supposed to maximize the ICL
+  criteria. 
+
+  This function has been extended to the case of bipartite networks. In
+  this case, despite \code{Y} has to be of dimension (T x N x N), it is
+  possible to give a bipartition of the nodes into two disjoint
+  sets. For statistical reasons, \code{fixed.param} is automatically set
+  to \code{TRUE}. The number of groups will be divided into two parts at
+  the starting point but there is no intrinsic guaranty that the final groups are
+  coherent with the bipartition (if not, a warning message is generated).
 }
 \value{
 Returns a list of \code{dynsbm} objects. Each object of class \code{dynsbm} is a \code{list} with the following components:
@@ -76,11 +93,13 @@ Returns a list of \code{dynsbm} objects. Each object of class \code{dynsbm} is a
 \item{self.loop}{Specifies whether the model allows self-loops.}
 }
 \references{
-Catherine Matias and Vincent Miele, \emph{Statistical clustering of temporal networks through a dynamic stochastic block model}, Journal of the Royal Statistical Society: Series B (2016)
+Catherine Matias and Vincent Miele, \emph{Statistical clustering of temporal networks through a dynamic stochastic block model}, Journal of the Royal Statistical Society: Series B (2017)
 http://dx.doi.org/10.1111/rssb.12200
 http://arxiv.org/abs/1506.07464
 
-Vincent Miele and Catherine Matias, \emph{Revealing the hidden structure of dynamic ecological networks}, preprint
+Vincent Miele and Catherine Matias, \emph{Revealing the hidden structure
+  of dynamic ecological networks},  Royal Society Open Science (2017)
+http://dx.doi.org/10.1098/rsos.170251
 https://arxiv.org/abs/1701.01355
 }
 \author{

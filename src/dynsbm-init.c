@@ -8,10 +8,10 @@
 */
 
 /* .Call calls */
-extern SEXP dynsbm_dynsbmcore(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP dynsbm_dynsbmcore(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"dynsbm_dynsbmcore", (DL_FUNC) &dynsbm_dynsbmcore, 12},
+    {"dynsbm_dynsbmcore", (DL_FUNC) &dynsbm_dynsbmcore, 13},
     {NULL, NULL, 0}
 };
 

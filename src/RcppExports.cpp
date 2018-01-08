@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // dynsbmcore
-List dynsbmcore(int T, int N, int Q, NumericVector Yasvector, const Rcpp::IntegerMatrix& present, std::string edgetype, int K, IntegerVector clustering, int nbit, int nbthreads, bool isdirected, bool withselfloop);
-RcppExport SEXP dynsbm_dynsbmcore(SEXP TSEXP, SEXP NSEXP, SEXP QSEXP, SEXP YasvectorSEXP, SEXP presentSEXP, SEXP edgetypeSEXP, SEXP KSEXP, SEXP clusteringSEXP, SEXP nbitSEXP, SEXP nbthreadsSEXP, SEXP isdirectedSEXP, SEXP withselfloopSEXP) {
+List dynsbmcore(int T, int N, int Q, NumericVector Yasvector, const Rcpp::IntegerMatrix& present, std::string edgetype, int K, IntegerVector clustering, int nbit, int nbthreads, bool isdirected, bool withselfloop, bool frozen);
+RcppExport SEXP dynsbm_dynsbmcore(SEXP TSEXP, SEXP NSEXP, SEXP QSEXP, SEXP YasvectorSEXP, SEXP presentSEXP, SEXP edgetypeSEXP, SEXP KSEXP, SEXP clusteringSEXP, SEXP nbitSEXP, SEXP nbthreadsSEXP, SEXP isdirectedSEXP, SEXP withselfloopSEXP, SEXP frozenSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -23,7 +23,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type nbthreads(nbthreadsSEXP);
     Rcpp::traits::input_parameter< bool >::type isdirected(isdirectedSEXP);
     Rcpp::traits::input_parameter< bool >::type withselfloop(withselfloopSEXP);
-    rcpp_result_gen = Rcpp::wrap(dynsbmcore(T, N, Q, Yasvector, present, edgetype, K, clustering, nbit, nbthreads, isdirected, withselfloop));
+    Rcpp::traits::input_parameter< bool >::type frozen(frozenSEXP);
+    rcpp_result_gen = Rcpp::wrap(dynsbmcore(T, N, Q, Yasvector, present, edgetype, K, clustering, nbit, nbthreads, isdirected, withselfloop, frozen));
     return rcpp_result_gen;
 END_RCPP
 }

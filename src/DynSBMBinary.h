@@ -26,12 +26,13 @@ namespace dynsbm{
     ~DynSBMBinary(){}
     virtual double logDensity(int t, int q, int l, int y) const{
       if(y==0){
-	return(log(_betaql[t][q][l]));
+	return(_betaql[t][q][l]); // trick: which is actually log(_betaql[t][q][l]))
       } else{
-	return(log(1-_betaql[t][q][l]));
+	return(_1minusbetaql[t][q][l]); // trick: which is actually log(1-_betaql[t][q][l]))
       }
     }
     virtual void updateTheta(int*** const Y);
+    virtual void updateFrozenTheta(int*** const Y);
   };
   
   class DynSBMBinaryAddEventFunctor{

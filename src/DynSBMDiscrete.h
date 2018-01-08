@@ -22,7 +22,7 @@ namespace dynsbm{
     : public DynSBM<int>{
   protected:
     int _k; // Y has integer values in [1,2,...K]
-    double**** _multinomprobaql;
+    double**** _multinomprobaql; // trick: store log(multinomprobaql)
     void correctMultinomproba();
     void addEvent(double proba, int y, int t, int q, int l){
       _multinomprobaql[t][q][l][y-1] += proba; // y is an integer value in [1,2,...K]
@@ -38,17 +38,21 @@ namespace dynsbm{
       _k=K;
       allocate4D(_multinomprobaql,_t,_q,_q,_k);
     }
-    double**** const getMultinomproba() const{
-      return(_multinomprobaql);
+    double getMultinomproba(int t, int q, int l, int k) const{
+      return(exp(_multinomprobaql[t][q][l][k]));
     }
     virtual double logDensity(int t, int q, int l, int y) const{
       if(y==0){
-	return(log(_betaql[t][q][l]));
+	return(_betaql[t][q][l]); // trick: which is actually log(_betaql[t][q][l]))
       } else{
-	return(log(1-_betaql[t][q][l]) + log(_multinomprobaql[t][q][l][y-1])); // y is an integer value in [1,2,...K]
+	// NB: y is an integer value in [1,2,...K]
+	return(_1minusbetaql[t][q][l] // trick: which is actually log(1-_betaql[t][q][l]))
+	       //+ log(_multinomprobaql[t][q][l][y-1]));
+	       + _multinomprobaql[t][q][l][y-1]); // trick: which is actually log(_multinomprobaql[t][q][l][y-1])
       }
     }
     virtual void updateTheta(int*** const Y);
+    virtual void updateFrozenTheta(int*** const Y);
     friend class DynSBMDiscreteAddEventFunctor;
   };
 

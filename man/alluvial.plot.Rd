@@ -23,11 +23,13 @@ Each group q at each time step t is called Xt_q where X is time step abbreviatio
 The thickness of each line is  proportional  to the  corresponding node counts.
 }
 \references{
-Catherine Matias and Vincent Miele, \emph{Statistical clustering of temporal networks through a dynamic stochastic block model}, Journal of the Royal Statistical Society: Series B (2016)
+Catherine Matias and Vincent Miele, \emph{Statistical clustering of temporal networks through a dynamic stochastic block model}, Journal of the Royal Statistical Society: Series B (2017)
 http://dx.doi.org/10.1111/rssb.12200
 http://arxiv.org/abs/1506.07464
 
-Vincent Miele and Catherine Matias, \emph{Revealing the hidden structure of dynamic ecological networks}, preprint
+Vincent Miele and Catherine Matias, \emph{Revealing the hidden structure
+  of dynamic ecological networks},  Royal Society Open Science (2017)
+http://dx.doi.org/10.1098/rsos.170251
 https://arxiv.org/abs/1701.01355
 }
 \author{

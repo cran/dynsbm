@@ -16,6 +16,11 @@
  */
 #ifndef DYNSBM_tOOLS
 #define DYNSBM_tOOLS
+
+namespace dynsbm{
+  const double precision = 1e-10;
+}
+
 template<typename Ttype>
 void allocate2D(Ttype**& ptr, int d1, int d2){
   ptr = new Ttype*[d1];

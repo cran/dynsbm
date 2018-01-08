@@ -20,4 +20,8 @@ namespace dynsbm{
     DynSBMBinaryAddEventFunctor addEventFunctor(*this);
     updateThetaCore<DynSBMBinaryAddEventFunctor>(Y, addEventFunctor);
   }
+  void DynSBMBinary::updateFrozenTheta(int*** const Y){// M-step
+    DynSBMBinaryAddEventFunctor addEventFunctor(*this);
+    updateFrozenThetaCore<DynSBMBinaryAddEventFunctor>(Y, addEventFunctor);
+  }
 }

@@ -17,11 +17,13 @@ Authors: Catherine Matias, Vincent Miele
 Maintainer: Vincent Miele <vincent.miele@univ-lyon1.fr>
 }
 \references{
-Catherine Matias and Vincent Miele, \emph{Statistical clustering of temporal networks through a dynamic stochastic block model}, Journal of the Royal Statistical Society: Series B (2016)
+Catherine Matias and Vincent Miele, \emph{Statistical clustering of temporal networks through a dynamic stochastic block model}, Journal of the Royal Statistical Society: Series B (2017)
 http://dx.doi.org/10.1111/rssb.12200
 http://arxiv.org/abs/1506.07464
 
-Vincent Miele and Catherine Matias, \emph{Revealing the hidden structure of dynamic ecological networks}, preprint
+Vincent Miele and Catherine Matias, \emph{Revealing the hidden structure
+  of dynamic ecological networks},  Royal Society Open Science (2017)
+http://dx.doi.org/10.1098/rsos.170251
 https://arxiv.org/abs/1701.01355
 }
 \keyword{ package }

@@ -72,9 +72,12 @@ select.dynsbm(Y, present=NULL, Qmin, Qmax,
   this case, despite \code{Y} has to be of dimension (T x N x N), it is
   possible to give a bipartition of the nodes into two disjoint
   sets. For statistical reasons, \code{fixed.param} is automatically set
-  to \code{TRUE}. The number of groups will be divided into two parts at
-  the starting point but there is no intrinsic guaranty that the final groups are
-  coherent with the bipartition (if not, a warning message is generated).
+  to \code{TRUE}. Given the total number of groups Q between Qmin and
+  Qmax, there is Q/2 groups for each set of nodes (when Q is odd,
+  there is floor(Q/2)+1 groups for the largest set of nodes);
+  however, there is no guaranty that the final groups are
+  coherent with the bipartition, i.e. that any group is composed by
+  nodes of one of the two sets (if not, a warning message is generated).
 }
 \value{
 Returns a list of \code{dynsbm} objects. Each object of class \code{dynsbm} is a \code{list} with the following components:

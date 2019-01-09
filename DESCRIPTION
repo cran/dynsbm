@@ -1,8 +1,8 @@
 Package: dynsbm
 Type: Package
 Title: Dynamic Stochastic Block Models
-Version: 0.5
-Date: 2018-01-01
+Version: 0.6
+Date: 2019-01-10
 Author: Catherine Matias, Vincent Miele
 Maintainer: Vincent Miele <vincent.miele@univ-lyon1.fr>
 Description: Dynamic stochastic block model that combines a stochastic block model (SBM) for its static part with independent Markov chains for the evolution of the nodes groups through time, developed in  Matias and Miele (2016) <doi:10.1111/rssb.12200>.
@@ -12,6 +12,6 @@ LinkingTo: Rcpp
 License: GPL-3
 URL: http://lbbe.univ-lyon1.fr/dynsbm
 NeedsCompilation: yes
-Packaged: 2018-01-08 10:01:59 UTC; vmiele
+Packaged: 2019-01-09 14:30:53 UTC; vmiele
 Repository: CRAN
-Date/Publication: 2018-01-08 10:11:23 UTC
+Date/Publication: 2019-01-09 15:10:06 UTC

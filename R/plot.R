@@ -215,7 +215,7 @@ adjacency.plot <- function(dynsbm, Y, present=NULL, col=heat.colors(9)){
     par(mar = rep(0.5,4))
     for(t in 1:dim(Y)[1]){
         Yt <- Y[t,,]
-        index <- intersect(which(rowSums(Yt)>0L),which(colSums(Yt)>0L))
+        index <- which(dynsbm$membership[,t]>0)
         subYt <- Yt[index,index]
         if(is.matrix(subYt)){
             membershipt <- dynsbm$membership[,t]

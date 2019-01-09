@@ -61,7 +61,7 @@ select.dynsbm <- function(Y, present=NULL, Qmin, Qmax,
         class(dynsbm) <- c("list","dynsbm")
         list.dynsbm[[length(list.dynsbm)+1]] <- dynsbm
     }
-    plot.icl(list.dynsbm)
+    if(plot) plot.icl(list.dynsbm)
     list.dynsbm
 }
 

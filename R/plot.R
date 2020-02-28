@@ -89,7 +89,7 @@ connectivity.plot <- function(dynsbm, Y){
         for (l in 1:Q){
             beta[,q,l] <- sapply(1:T, FUN=function(t){
                 subYt <- Y[t, which(membership[,t]==q),which(membership[,t]==l)]
-                if(class(subYt)=="matrix"){
+                if("matrix" %in% class(subYt)){
                     d1 <- nrow(subYt)
                     d2 <- ncol(subYt)
                     if(q==l){ #subYt is square
@@ -102,8 +102,7 @@ connectivity.plot <- function(dynsbm, Y){
                     } else{
                         this.beta <- sum(subYt>0) / (d1*d2)
                     }
-                }
-                if(class(subYt) %in% c("numeric","integer")){
+                } else{ ## any(class(subYt) %in% c("numeric","integer"))
                     this.beta <- sum(subYt>0) / length(subYt)
                 }
                 return(this.beta)
@@ -140,10 +139,9 @@ connectivity.plot <- function(dynsbm, Y){
                                         #subYt is empty
                         this.t <- rep(0,K+1)
                     } else{
-                        if(class(subYt)=="matrix" & q==l){ #subYt is square
+                        if(("matrix" %in% class(subYt)) & q==l){ #subYt is square
                             if(!dynsbm$self.loop) diag(subYt) <- NA
-                        }
-                        if(class(subYt)=="integer"){ #subYt is a vector
+                        } else{ ## ("integer" %in% class(subYt)==) #subYt is a vector
                             if(!dynsbm$self.loop) subYt <- 0L
                         }
                         this.t <- (table(c(subYt,0:K))-1)/length(subYt[!is.na(subYt)])
@@ -167,10 +165,9 @@ connectivity.plot <- function(dynsbm, Y){
             for (l in 1:Q){
                 connec[,q,l] <- sapply(1:T, FUN=function(t){
                     subYt <- Y[t, which(membership[,t]==q),which(membership[,t]==l)]
-                    if(class(subYt)=="matrix" & q==l){ #subYt is square
+                    if(("matrix" %in% class(subYt)) & q==l){ #subYt is square
                         if(!dynsbm$self.loop) diag(subYt) <- NA
-                    }
-                    if(class(subYt)=="numeric"){
+                    } else{ # ("integer" %in% class(subYt)==) #subYt is a vector
                         if(!dynsbm$self.loop) subYt <- 0
                     }
                     if (length(subYt[subYt>0])){

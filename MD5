@@ -1,9 +1,9 @@
 d32239bcb673463ab874e80d47fae504 *COPYING
-d2e616892ffb053e12b6b729968bb0e7 *DESCRIPTION
+611a1f82d5b302897109b05d0630e1e6 *DESCRIPTION
 38ef15492ef61fef666e2a70164a35e4 *NAMESPACE
 a857df8c4d823a67323f1ede30e46153 *R/RcppExports.R
 17e77213a2329209899d2a1db80d1df1 *R/estimate.dynsbm.R
-cc5a6a33fcd545c3a3c30c7beada1174 *R/plot.R
+60f56be1391470f7d4e5b7f61e4f1e9d *R/plot.R
 eaab319e816208cf7183b66042afcb09 *R/select.dynsbm.R
 8ec0b2027dc895854b7bd4f3578079ef *data/antsMersch.rda
 5e1db51502d970fb14baacba1f0c38cb *data/foodwebWoodward.rda
